@@ -1,97 +1,17 @@
-# Scripts
+#Big Joe Stretch's PowerShell Scripts Repository
+This repository contains a number of scripts that I have written or enhanced to make day-to-day life easier for system administators. These are provided for free to the community under an MIT License. An explantion or guide on how to use the scripts can be found on my blog LazyAdmin.nl
 
-Endpoint Analytics Proactive Remediations - Detection and Remediations scripts
+Download the contents of this repository to your workstation.
+To use a script you can copy it onto your workstation and open the PowerShell window in that location. To read more about running PowerShell scripts, you can read this article: https://lazyadmin.nl/powershell/run-a-powershell-script/
 
-Proactive Remediations are Intune's take on ConfigMgr's Configuration Item/Baseline. They are PowerShell scripts that consist of a detection and remediation script. The detection script evaluates the current state and only runs the remediation script if it does not match the desired state.
+Launch PowerShell and make sure Set-ExecutionPolicy is set to RemoteSigned or Bypass
 
-You can access Proactive Remediations in the [Microsoft Endpoint Manager](https://endpoint.microsoft.com/) portal.
+Learn how to write your own PowerShell script with this complete guide: https://lazyadmin.nl/powershell/powershell-script/
 
-Reports / Endpoint analytics / Proactive Remediations
+Contribution
+Create a fork of the project into your own reposity. Make all your necessary changes and create a pull request with a description on what was added or removed and details explaining the changes in lines of code. If approved, I will merge it.
 
-## Proactive Remediations
+Licensing
+Licensed under the MIT License (the “License”); you may not use this file except in compliance with the License.
 
-1. Enable Automatic Windows Update
-2. Restart Stopped Office C2R Service
-3. Update Office C2R
-
-<br>
-
-## 1. Enable Automatic Windows Update
-
-When moving to WUfB you may encounter a number of devices holding onto a setting to disable automatic updates which had been applied to a legacy GPO.
-
-This proactive remediation will enable automatic updates if they are disabled
-
-Non-Compliant device look as follows:
-
-![AutoUpdateDisabled](images/AutoUpdateDisabled.png)
-
-Desired State:
-
-"HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU\NoAutoUpdate" = 0
-
-<br>
-
-## 2. Restart Stopped Office C2R Service
-
-This proactive remediation will check if the ClickToRunSvc service is running and if not, start it. It is based on the built-in proactive remediation by Microsoft, only with changes since I noticed the original is incorrectly coded. Here is an example of the incorrect code:
-
-```powershell
-$ctr = 0
-while ($curSvcStat -eq "Stopped") {
-    Start-Sleep -Seconds 5
-    ctr++ # <-- problem here and below. Should be $ctr not ctr.
-    if (ctr -eq 12) {
-        Write-Output "Office C2R service could not be started after 60 seconds"
-        exit 1
-    }
-}
-```
-
-The "$ctr" variable is later written simply as "ctr" (no $) which PowerShell will treat as a command/function and would have resulted in an "infinite loop" as $ctr will stay on 0.
-
-![ctrError](images/ctrError.png)
-
-The corrected code looks as follows:
-
-```powershell
-$ctr = 0
-while ($curSvcStat -eq "Stopped") {
-    Start-Sleep -Seconds 5
-    $ctr++
-    if ($ctr -eq 12) {
-        Write-Output "Office C2R service could not be started after 60 seconds"
-        exit 1
-    }
-}
-```
-
-Another problem found with the Microsoft code. If $curSvcStat is set as "Stopped", it will always be stopped until the variable is updated by running the cmdlet again, which is isn't. So even if the service does start (Running) the variable will always be "Stopped"
-
-```powershell
-while ($curSvcStat -eq "Stopped")
-```
-
-Changed the code as follows:
-
-```powershell
-while ((Get-Service $svcCur).Status -ne "Running")
-```
-
-<br>
-
-## 3. Update Office C2R
-
-The Office Click-to-Run updater tool is often always lagging behind on updates. This proactive remediation will check the registry for when the machine last checked for updates, and if more than 3 days ago, clear the reg key and start the Scheduled task.
-
-The UpdateDetectionLastRunTime key value is in LDAP/Win32 FILETIME which needs to be converted into date/time which is human readable. Can do this in PowerShell which I found from the link below
-
-https://www.epochconverter.com/ldap
-
-Below is a screenshot of the reg key value and scheduled task which the scripts interact with.
-
-![updateC2R](images/updateC2R.png)
-
----
-
-![cover](images/cover.png)
+THE SOFTWARE (SCRIPTS) ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
