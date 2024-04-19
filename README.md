@@ -1,4 +1,4 @@
-Big Joe Stretch's PowerShell Scripts Repository
+Joel Cottrell's PowerShell Scripts Repository
 ================
 
 This repository contains a number of scripts that I have written or enhanced to make day-to-day life easier for system administators. These are provided for free to the community under an MIT License. An explantion or guide on how to use the scripts can be found on my blog LazyAdmin.nl
